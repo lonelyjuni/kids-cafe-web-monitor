@@ -6,8 +6,8 @@ test('should parse calendar HTML and extract session data correctly', () => {
       <td class="day" dataDow="7">
         <span>13</span>
         <div>
-          <p>1회차 (09:30~11:30) [개인] - <i>3</i>석 / 18석</p>
-          <p>2회차 (13:00~15:00) [개인] - <i>0</i>석 / 18석</p>
+          <p>1회 <u>개인</u> <span> <i>3</i> </span></p>
+          <p>2회 <u>개인</u> <span> <i>0</i> </span></p>
         </div>
       </td>
     </table>
@@ -19,18 +19,18 @@ test('should parse calendar HTML and extract session data correctly', () => {
       dayOfWeek: '토',
       sessions: [
         {
-          sessionName: '1회차',
-          time: '09:30~11:30',
+          sessionName: '1회 (개인)',
+          time: '09:30 ~ 11:30',
           type: '개인',
           available: 3,
-          total: 18
+          total: 20
         },
         {
-          sessionName: '2회차',
-          time: '13:00~15:00',
+          sessionName: '2회 (개인)',
+          time: '13:00 ~ 15:00',
           type: '개인',
           available: 0,
-          total: 18
+          total: 20
         }
       ]
     }

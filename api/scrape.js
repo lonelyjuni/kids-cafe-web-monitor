@@ -5,7 +5,7 @@ export function parseHtmlCalendar(html, year, month) {
   const $ = cheerio.load(html);
   const results = [];
 
-  $('td.day').each((_, td) => {
+  $('td.day, td.today').each((_, td) => {
     const dayText = $(td).find('> span').text().trim();
     if (!dayText) return;
 
@@ -16,16 +16,33 @@ export function parseHtmlCalendar(html, year, month) {
 
     const sessions = [];
     $(td).find('div p').each((_, p) => {
-      const text = $(p).text();
-      // 정규식을 통한 회차 정보 추출 예: 1회차 (09:30~11:30) [개인] - 3석 / 18석
-      const sessionMatch = text.match(/(\d+회차)\s*\((.*?)\)\s*\[(.*?)\]\s*-\s*(\d+)석\s*\/\s*(\d+)석/);
+      const text = $(p).text().replace(/\s+/g, ' ').trim();
+      // 개편된 포맷 매칭: 예 "1회 공용 21" 또는 "1회차 공용 21"
+      const sessionMatch = text.match(/(\d+회(?:차)?)\s+(\S+)\s+(\d+)/);
       if (sessionMatch) {
+        const sessionName = sessionMatch[1];
+        const type = sessionMatch[2];
+        const available = parseInt(sessionMatch[3], 10);
+        
+        // 정적 시간 맵 테이블 제공
+        const timeMap = {
+          '1회': '09:30 ~ 11:30',
+          '1회차': '09:30 ~ 11:30',
+          '2회': '13:00 ~ 15:00',
+          '2회차': '13:00 ~ 15:00',
+          '3회': '15:30 ~ 17:30',
+          '3회차': '15:30 ~ 17:30',
+          '4회': '18:00 ~ 20:00',
+          '4회차': '18:00 ~ 20:00'
+        };
+        const time = timeMap[sessionName] || '시간 정보 없음';
+
         sessions.push({
-          sessionName: sessionMatch[1],
-          time: sessionMatch[2],
-          type: sessionMatch[3],
-          available: parseInt(sessionMatch[4], 10),
-          total: parseInt(sessionMatch[5], 10)
+          sessionName: `${sessionName} (${type})`,
+          time,
+          type,
+          available,
+          total: available > 20 ? available : 20
         });
       }
     });

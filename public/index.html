@@ -16,6 +16,8 @@
       <h1>Kids Cafe Live</h1>
     </div>
     <div class="header-controls">
+      <button id="sidebar-toggle" class="btn btn-secondary">🔍 지역/지점 선택</button>
+      <button id="search-now-btn" class="btn btn-secondary">⚡ 조회</button>
       <button id="monitor-toggle" class="btn btn-inactive">🔴 모니터링 중지됨</button>
       <div class="select-wrapper">
         <select id="interval-select" aria-label="갱신 주기 선택">
@@ -30,8 +32,12 @@
   </header>
   
   <main>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
     <aside id="sidebar" aria-label="지역 및 지점 필터">
       <h2>자치구 선택</h2>
+      <div class="search-box-wrapper">
+        <input type="text" id="cafe-search" placeholder="🔍 키즈카페 검색..." aria-label="키즈카페명 검색">
+      </div>
       <div id="regions-container" class="accordion-container"></div>
     </aside>
     

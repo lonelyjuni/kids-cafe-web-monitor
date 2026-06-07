@@ -21,6 +21,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('filter-weekend').addEventListener('change', renderMatrix);
   document.getElementById('filter-available').addEventListener('change', renderMatrix);
   document.getElementById('filter-date').addEventListener('input', renderMatrix);
+
+  // 모바일 사이드바 토글 및 오버레이 바인딩
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+
+  // 단발성 조회 버튼 리스너
+  document.getElementById('search-now-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('search-now-btn');
+    btn.disabled = true;
+    btn.innerText = '⚡ 조회 중...';
+    try {
+      await fetchSelectedCafesLive();
+    } finally {
+      btn.disabled = false;
+      btn.innerText = '⚡ 조회';
+    }
+  });
+
+  // 키즈카페 명 텍스트 검색 리스너
+  document.getElementById('cafe-search').addEventListener('input', handleCafeSearch);
 });
 
 function renderSidebar() {
@@ -50,6 +81,13 @@ function renderSidebar() {
       cb.addEventListener('change', (e) => {
         if (e.target.checked) {
           selectedCafes.add(cafe.id);
+          // 모바일 해상도(768px 이하)일 때 체크 시 사이드바 자동 닫기
+          if (window.innerWidth <= 768) {
+            setTimeout(() => {
+              document.getElementById('sidebar').classList.remove('open');
+              document.getElementById('sidebar-overlay').classList.remove('open');
+            }, 300);
+          }
         } else {
           selectedCafes.delete(cafe.id);
         }
@@ -274,4 +312,38 @@ function toggleMute() {
   isMuted = !isMuted;
   btn.innerText = isMuted ? '🔇 음소거됨' : '🔊 소리 켬';
   btn.className = isMuted ? 'btn btn-secondary btn-muted' : 'btn btn-secondary';
+}
+
+function handleCafeSearch(e) {
+  const query = e.target.value.toLowerCase().trim();
+  const accordions = document.querySelectorAll('.region-accordion');
+
+  accordions.forEach(acc => {
+    const items = acc.querySelectorAll('.cafe-item');
+    let visibleCount = 0;
+
+    items.forEach(item => {
+      const cafeName = item.querySelector('span').innerText.toLowerCase();
+      if (cafeName.includes(query)) {
+        item.style.display = 'flex';
+        visibleCount++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    const list = acc.querySelector('.cafe-list');
+    if (query !== '') {
+      if (visibleCount > 0) {
+        acc.style.display = 'block';
+        list.style.display = 'block'; // 검색 매칭 시 아코디언 강제 오픈
+      } else {
+        acc.style.display = 'none';
+      }
+    } else {
+      // 검색어가 비었을 때는 초기 상태 복원 (사이드바 목록 모두 보이고 아코디언은 다 닫음)
+      acc.style.display = 'block';
+      list.style.display = 'none';
+    }
+  });
 }

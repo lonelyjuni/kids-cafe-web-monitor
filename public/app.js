@@ -253,62 +253,71 @@ function renderMatrix() {
 
   if (Object.keys(cacheData).length === 0) return;
 
-  // Unique dates extraction
-  let allDates = new Set();
-  for (const id in cacheData) {
-    if (cacheData[id] && cacheData[id].dates) {
-      cacheData[id].dates.forEach(d => allDates.add(d.date));
+  // 1. 기준 날짜 확인
+  let targetDate = document.getElementById('filter-date').value;
+  if (!targetDate) {
+    targetDate = getUpcomingWeekend();
+    document.getElementById('filter-date').value = targetDate;
+  }
+
+  // 2. 선택된 키즈카페 목록 (가로축 열 헤더가 됨)
+  const activeIds = Object.keys(cacheData).filter(id => selectedCafes.has(id));
+  if (activeIds.length === 0) return;
+
+  // 3. 해당 날짜에 매칭되는 지점들의 시간대(time) 목록 유니크 추출 (세로축 행 헤더가 됨)
+  let allTimes = new Set();
+  activeIds.forEach(id => {
+    const dateData = cacheData[id]?.dates.find(d => d.date === targetDate);
+    if (dateData && dateData.sessions) {
+      dateData.sessions.forEach(s => {
+        if (s.time) allTimes.add(s.time);
+      });
     }
-  }
-  let sortedDates = Array.from(allDates).sort();
+  });
+  const sortedTimes = Array.from(allTimes).sort(); // 시간대 정렬 (예: 09:30~11:30, 13:00~15:00 등)
 
-  // Filters application
-  const isWeekendOnly = document.getElementById('filter-weekend').checked;
-  const isAvailableOnly = document.getElementById('filter-available').checked;
-  const targetDate = document.getElementById('filter-date').value;
+  // 4. 테이블 가로 열 헤더 그리기 ("시간대" + 선택한 카페명들)
+  const timeHeader = document.createElement('th');
+  timeHeader.innerText = '운영 시간대';
+  tableHeader.appendChild(timeHeader);
 
-  if (isWeekendOnly) {
-    sortedDates = sortedDates.filter(dateStr => {
-      const day = new Date(dateStr).getDay();
-      return day === 0 || day === 6; // 토요일(6), 일요일(0)
-    });
-  }
-  if (targetDate) {
-    sortedDates = sortedDates.filter(d => d === targetDate);
-  }
-
-  // Header rendering
-  const cornerHeader = document.createElement('th');
-  cornerHeader.innerText = '키즈카페 명';
-  tableHeader.appendChild(cornerHeader);
-
-  sortedDates.forEach(date => {
+  activeIds.forEach(id => {
     const th = document.createElement('th');
-    const day = new Date(date).getDay();
-    const dow = ['일', '월', '화', '수', '목', '금', '토'][day];
-    th.innerText = `${date.substring(5)} (${dow})`;
+    const rawName = cafes.find(c => c.id === id)?.name || id;
+    th.innerText = simplifyCafeName(rawName);
     tableHeader.appendChild(th);
   });
 
-  // Body rendering
-  for (const id in cacheData) {
+  // 5. 필터 값 읽기
+  const isAvailableOnly = document.getElementById('filter-available').checked;
+
+  // 6. 각 시간대(Row)별로 루프 돌려 행 생성
+  sortedTimes.forEach(time => {
     const tr = document.createElement('tr');
-    const nameTd = document.createElement('td');
-    const fullCafe = cafes.find(c => c.id === id);
-    nameTd.innerText = fullCafe ? fullCafe.name : id;
-    tr.appendChild(nameTd);
+    
+    // 첫 번째 열: 시간대 명칭 표시
+    const timeTd = document.createElement('td');
+    timeTd.innerText = time;
+    tr.appendChild(timeTd);
 
-    sortedDates.forEach(date => {
+    // 각 카페별로 해당 시간대에 운영하는 세션 정보를 셀에 배치
+    activeIds.forEach(id => {
       const td = document.createElement('td');
-      const matchedDate = cacheData[id]?.dates.find(d => d.date === date);
-
-      if (matchedDate) {
-        matchedDate.sessions.forEach(session => {
+      const dateData = cacheData[id]?.dates.find(d => d.date === targetDate);
+      const fullCafe = cafes.find(c => c.id === id);
+      
+      if (dateData && dateData.sessions) {
+        // 해당 시간대(time)와 정확히 일치하는 세션(들) 찾기
+        const matchedSessions = dateData.sessions.filter(s => s.time === time);
+        
+        matchedSessions.forEach(session => {
           if (isAvailableOnly && session.available === 0) return;
-          
+
           const card = document.createElement('div');
           card.className = `session-card ${session.available > 0 ? 'available' : ''}`;
-          card.innerHTML = `${session.sessionName}<br>${session.time}<br><b>${session.available}석</b> / ${session.total}석`;
+          
+          // 회차 이름 및 정보 렌더링
+          card.innerHTML = `${session.sessionName}<br><b>${session.available}석</b> / ${session.total}석`;
           
           if (session.available > 0) {
             card.addEventListener('click', () => {
@@ -318,10 +327,15 @@ function renderMatrix() {
           td.appendChild(card);
         });
       }
+      
+      // 데이터가 아예 없는 경우
+      if (td.children.length === 0) {
+        td.innerHTML = '<span class="status-closed">미운영</span>';
+      }
       tr.appendChild(td);
     });
     tableBody.appendChild(tr);
-  }
+  });
 }
 
 function toggleMonitoring() {

@@ -559,3 +559,13 @@ main {
     z-index: 11;
   }
 }
+
+.status-closed {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  opacity: 0.6;
+  display: block;
+  text-align: center;
+  padding: 0.5rem;
+}

@@ -1,3 +1,34 @@
+// 지점명 간소화 헬퍼 함수
+function simplifyCafeName(name) {
+  return name
+    .replace(/^서울형\s*키즈카페\s*/, '')
+    .replace(/^시립\s*/, '')
+    .replace(/^[가-힣]+구\s*/, '') // "용산구 ", "동작구 " 등 구이름 제거
+    .split('(')[0] // 괄호 정보 제거
+    .trim();
+}
+
+// 가장 가까운 주말 날짜 구하는 헬퍼 함수
+function getUpcomingWeekend() {
+  const today = new Date();
+  const day = today.getDay(); // 0: 일, 1: 월, ... 6: 토
+  
+  let daysUntilWeekend = 0;
+  if (day === 0 || day === 6) {
+    daysUntilWeekend = 0; // 오늘이 주말이면 오늘
+  } else {
+    daysUntilWeekend = 6 - day; // 가장 가까운 토요일까지 남은 일수
+  }
+  
+  const weekend = new Date(today);
+  weekend.setDate(today.getDate() + daysUntilWeekend);
+  
+  const yyyy = weekend.getFullYear();
+  const mm = String(weekend.getMonth() + 1).padStart(2, '0');
+  const dd = String(weekend.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 let cafes = [];
 let selectedCafes = new Set();
 let monitorIntervalId = null;
@@ -13,6 +44,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderSidebar();
   } catch (e) {
     console.error('Failed to load cafes.json', e);
+  }
+
+  const dateFilter = document.getElementById('filter-date');
+  if (dateFilter && !dateFilter.value) {
+    dateFilter.value = getUpcomingWeekend();
   }
 
   // 2. Set event listeners

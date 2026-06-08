@@ -1,16 +1,16 @@
 :root {
-  --bg-primary: #080c14;
-  --bg-secondary: #111827;
-  --bg-card: #1f2937;
-  --bg-glass: rgba(17, 24, 39, 0.75);
-  --accent: #10b981;
-  --accent-glow: rgba(16, 185, 129, 0.25);
-  --accent-hover: #059669;
-  --danger: #f43f5e;
-  --danger-glow: rgba(244, 63, 94, 0.2);
+  --bg-primary: #0c0c0c;
+  --bg-secondary: #161616;
+  --bg-card: #222222;
+  --bg-glass: rgba(22, 22, 22, 0.75);
+  --accent: #ffffff;
+  --accent-glow: rgba(255, 255, 255, 0.15);
+  --accent-hover: #e5e5e5;
+  --danger: #333333;
+  --danger-glow: rgba(255, 255, 255, 0.05);
   --text-primary: #ffffff;
-  --text-muted: #9ca3af;
-  --border-color: #374151;
+  --text-muted: #8a8a8a;
+  --border-color: #262626;
   --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -59,7 +59,7 @@ header {
   font-family: 'Outfit', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #34d399, #059669);
+  background: linear-gradient(135deg, #ffffff, #a3a3a3);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -88,7 +88,7 @@ header {
 
 #monitor-toggle.btn {
   background-color: var(--accent);
-  color: white;
+  color: #000000;
 }
 
 #monitor-toggle.btn:hover {
@@ -99,29 +99,30 @@ header {
 
 #monitor-toggle.btn.btn-inactive {
   background-color: var(--danger);
+  color: #ffffff;
 }
 
 #monitor-toggle.btn.btn-inactive:hover {
-  background-color: #e11d48;
+  background-color: #444444;
   transform: translateY(-2px);
   box-shadow: 0 0 15px var(--danger-glow);
 }
 
 .btn-secondary {
-  background-color: #1e293b;
+  background-color: #222222;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-  background-color: #334155;
+  background-color: #333333;
   color: white;
 }
 
 .status-time {
   font-size: 0.85rem;
   color: var(--text-muted);
-  background-color: #1e293b;
+  background-color: #222222;
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   border: 1px solid var(--border-color);
@@ -134,7 +135,7 @@ header {
 
 select {
   appearance: none;
-  background-color: #1e293b;
+  background-color: #222222;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   padding: 0.6rem 2rem 0.6rem 1rem;
@@ -198,7 +199,7 @@ main {
   width: 100%;
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
-  background-color: #1f2937;
+  background-color: #222222;
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   font-size: 0.88rem;
@@ -220,13 +221,13 @@ main {
 .region-accordion {
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background-color: rgba(30, 41, 59, 0.3);
+  background-color: rgba(38, 38, 38, 0.3);
   overflow: hidden;
   transition: var(--transition);
 }
 
 .region-accordion:hover {
-  border-color: #334155;
+  border-color: #444444;
 }
 
 .region-title {
@@ -242,7 +243,7 @@ main {
 }
 
 .region-title:hover {
-  background-color: rgba(30, 41, 59, 0.6);
+  background-color: rgba(38, 38, 38, 0.6);
 }
 
 .btn-region-sync {
@@ -256,7 +257,7 @@ main {
 }
 
 .btn-region-sync:hover {
-  background-color: rgba(16, 185, 129, 0.2);
+  background-color: rgba(255, 255, 255, 0.15);
   transform: rotate(180deg);
 }
 
@@ -264,7 +265,7 @@ main {
   display: none;
   padding: 0.5rem 1rem 1rem 1rem;
   border-top: 1px solid var(--border-color);
-  background-color: rgba(15, 23, 42, 0.4);
+  background-color: rgba(22, 22, 22, 0.4);
 }
 
 .cafe-item {
@@ -328,7 +329,7 @@ main {
 }
 
 .date-picker-wrapper input[type="date"] {
-  background-color: #1e293b;
+  background-color: #222222;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   padding: 0.5rem 1rem;
@@ -368,7 +369,7 @@ main {
 }
 
 #matrix-table th {
-  background-color: #16223f;
+  background-color: #1a1a1a;
   color: var(--text-primary);
   font-weight: 600;
   font-size: 0.9rem;
@@ -397,7 +398,7 @@ main {
 
 /* Session Cards */
 .session-card {
-  background-color: rgba(30, 41, 59, 0.4);
+  background-color: rgba(34, 34, 34, 0.4);
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.75rem;
@@ -414,16 +415,16 @@ main {
 
 .session-card.available {
   border-color: var(--accent);
-  background-color: rgba(16, 185, 129, 0.08);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   cursor: pointer;
 }
 
 .session-card.available:hover {
-  background-color: rgba(16, 185, 129, 0.18);
+  background-color: rgba(255, 255, 255, 0.18);
   transform: translateY(-2px);
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.25);
 }
 
 .session-card b {
@@ -432,7 +433,7 @@ main {
 }
 
 .session-card.available b {
-  color: #34d399;
+  color: #ffffff;
 }
 
 /* Empty State */
@@ -466,7 +467,7 @@ main {
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #444444;
 }
 
 @media (max-width: 768px) {

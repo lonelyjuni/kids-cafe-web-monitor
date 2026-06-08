@@ -343,7 +343,7 @@ function toggleMonitoring() {
   if (monitorIntervalId) {
     clearInterval(monitorIntervalId);
     monitorIntervalId = null;
-    btn.innerText = '🔴 모니터링 중지됨';
+    btn.innerText = '● 모니터링 중지됨';
     btn.className = 'btn btn-inactive';
   } else {
     if (Notification.permission === 'default') {
@@ -352,7 +352,7 @@ function toggleMonitoring() {
     const secs = parseInt(document.getElementById('interval-select').value, 10);
     fetchSelectedCafesLive();
     monitorIntervalId = setInterval(fetchSelectedCafesLive, secs * 1000);
-    btn.innerText = '🟢 모니터링 중...';
+    btn.innerText = '● 모니터링 중...';
     btn.className = 'btn';
   }
 }

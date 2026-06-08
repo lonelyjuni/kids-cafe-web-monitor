@@ -49,6 +49,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (resTimes.ok) {
       cafeTimes = await resTimes.json();
     }
+    
+    // 즐겨찾는 지점 기본 선택 적용
+    const favoriteCafes = JSON.parse(localStorage.getItem('favoriteCafes') || '[]');
+    favoriteCafes.forEach(id => {
+      selectedCafes.add(id);
+    });
+
     renderSidebar();
   } catch (e) {
     console.error('Failed to load master assets', e);
@@ -176,11 +183,14 @@ function renderSidebar() {
         // 별표 핸들러
         const favBtn = item.querySelector('.btn-fav-cafe');
         favBtn.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           let favs = JSON.parse(localStorage.getItem('favoriteCafes') || '[]');
           favs = favs.filter(id => id !== cafe.id);
           localStorage.setItem('favoriteCafes', JSON.stringify(favs));
+          selectedCafes.delete(cafe.id); // 즐겨찾기 해제 시 선택 해제
           renderSidebar();
+          renderMatrix();
         });
 
         favList.appendChild(item);
@@ -242,15 +252,19 @@ function renderSidebar() {
 
       const favBtn = item.querySelector('.btn-fav-cafe');
       favBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         let favs = JSON.parse(localStorage.getItem('favoriteCafes') || '[]');
         if (favs.includes(cafe.id)) {
           favs = favs.filter(id => id !== cafe.id);
+          selectedCafes.delete(cafe.id); // 즐겨찾기 해제 시 선택 해제
         } else {
           favs.push(cafe.id);
+          selectedCafes.add(cafe.id); // 즐겨찾기 추가 시 자동 선택
         }
         localStorage.setItem('favoriteCafes', JSON.stringify(favs));
         renderSidebar();
+        renderMatrix();
       });
 
       list.appendChild(item);
@@ -573,11 +587,12 @@ function renderMatrix() {
         const card = document.createElement('div');
         card.className = `session-card ${matchedSession.available > 0 ? 'available' : ''}`;
         
-        // 회차 이름, 실제 시간대, 예약 현황 렌더링 (카드 전체 영역을 채우도록 세부 디자인 구성)
+        // 회차 정보와 시간대를 1줄로 통합하고 공석 정보를 2번째 줄로 콤팩트하게 렌더링
         card.innerHTML = `
-          <div style="font-weight: 700; margin-bottom: 2px;">${matchedSession.sessionName}</div>
-          <div style="opacity: 0.8; font-size: 0.65rem; margin-bottom: 2px;">${matchedTimeRangeStr}</div>
-          <div style="font-size: 0.7rem; font-weight: 600; margin-top: auto; padding-top: 2px; border-top: 1px dashed rgba(255,255,255,0.15);">
+          <div style="font-weight: 700; font-size: 0.65rem; margin-bottom: 1px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+            ${matchedSession.sessionName} (${matchedTimeRangeStr.replace(/\s+/g, '')})
+          </div>
+          <div style="font-size: 0.68rem; font-weight: 600; opacity: 0.95;">
             ${matchedSession.available}석 / ${matchedSession.total}석
           </div>
         `;

@@ -363,6 +363,10 @@ main {
   height: 1px; /* td height: 100% 작동을 위한 핵 */
 }
 
+#matrix-table tr {
+  height: 34px;
+}
+
 #matrix-table th {
   background-color: #1a1a1a;
   color: var(--text-primary);

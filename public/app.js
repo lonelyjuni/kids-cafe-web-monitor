@@ -54,9 +54,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 2. Set event listeners
   document.getElementById('monitor-toggle').addEventListener('click', toggleMonitoring);
   document.getElementById('mute-toggle').addEventListener('click', toggleMute);
-  document.getElementById('filter-weekend').addEventListener('change', renderMatrix);
-  document.getElementById('filter-available').addEventListener('change', renderMatrix);
-  document.getElementById('filter-date').addEventListener('input', renderMatrix);
+  document.getElementById('filter-date').addEventListener('input', () => {
+    // 상세 날짜 선택 시 퀵 칩의 선택 상태 제거
+    document.querySelectorAll('.quick-date-btn').forEach(btn => btn.classList.remove('active'));
+    renderMatrix();
+  });
+
+  // 퀵 일자 칩 렌더링
+  renderQuickDates();
 
   // 모바일 사이드바 토글 및 오버레이 바인딩
   const sidebar = document.getElementById('sidebar');
@@ -98,15 +103,33 @@ function renderSidebar() {
   const container = document.getElementById('regions-container');
   container.innerHTML = '';
   
-  const regions = [...new Set(cafes.map(c => c.region))].sort();
+  const favoriteRegions = JSON.parse(localStorage.getItem('favoriteRegions') || '[]');
+  const allRegions = [...new Set(cafes.map(c => c.region))].sort();
 
-  regions.forEach(region => {
+  // 즐겨찾기 자치구를 맨 앞으로 정렬
+  const sortedRegions = allRegions.sort((a, b) => {
+    const aFav = favoriteRegions.includes(a);
+    const bFav = favoriteRegions.includes(b);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return a.localeCompare(b);
+  });
+
+  sortedRegions.forEach(region => {
     const div = document.createElement('div');
     div.className = 'region-accordion';
     
     const title = document.createElement('div');
     title.className = 'region-title';
-    title.innerHTML = `<span>📂 ${region}</span> <button class="btn-region-sync" data-region="${region}">🔄</button>`;
+    
+    const isFav = favoriteRegions.includes(region);
+    title.innerHTML = `
+      <div class="region-title-left">
+        <button class="btn-fav ${isFav ? 'active' : ''}" data-region="${region}">${isFav ? '★' : '☆'}</button>
+        <span>📂 ${region}</span>
+      </div>
+      <button class="btn-region-sync" data-region="${region}">🔄</button>
+    `;
     
     const list = document.createElement('div');
     list.className = 'cafe-list';
@@ -115,7 +138,8 @@ function renderSidebar() {
     regionCafes.forEach(cafe => {
       const item = document.createElement('label');
       item.className = 'cafe-item';
-      item.innerHTML = `<input type="checkbox" value="${cafe.id}"> <span>${cafe.name.replace(region, '').trim()}</span>`;
+      const isChecked = selectedCafes.has(cafe.id) ? 'checked' : '';
+      item.innerHTML = `<input type="checkbox" value="${cafe.id}" ${isChecked}> <span>${cafe.name.replace(region, '').trim()}</span>`;
       
       const cb = item.querySelector('input');
       cb.addEventListener('change', (e) => {
@@ -127,6 +151,20 @@ function renderSidebar() {
         renderMatrix();
       });
       list.appendChild(item);
+    });
+
+    // 별표(즐겨찾기) 클릭 리스너 바인딩
+    const favBtn = title.querySelector('.btn-fav');
+    favBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      let favs = JSON.parse(localStorage.getItem('favoriteRegions') || '[]');
+      if (favs.includes(region)) {
+        favs = favs.filter(r => r !== region);
+      } else {
+        favs.push(region);
+      }
+      localStorage.setItem('favoriteRegions', JSON.stringify(favs));
+      renderSidebar();
     });
 
     title.addEventListener('click', (e) => {
@@ -145,6 +183,10 @@ function renderSidebar() {
         });
         renderMatrix();
         return;
+      }
+      
+      if (e.target.closest('.btn-fav')) {
+        return; // 별표 클릭 시 아코디언이 토글되지 않도록 차단
       }
       
       const isVisible = list.style.display === 'block';
@@ -315,8 +357,8 @@ function renderMatrix() {
     tableHeader.appendChild(th);
   });
 
-  // 5. 필터 값 읽기
-  const isAvailableOnly = document.getElementById('filter-available').checked;
+  // 5. 필터 값 읽기 (체크박스 제거로 인해 항상 모든 세션 표시)
+  const isAvailableOnly = false;
 
   // 6. 각 시간대(Row)별로 루프 돌려 행 생성
   sortedTimes.forEach(time => {
@@ -324,7 +366,7 @@ function renderMatrix() {
     
     // 첫 번째 열: 시간대 명칭 표시
     const timeTd = document.createElement('td');
-    timeTd.innerText = time;
+    timeTd.innerHTML = time.replace(' ~ ', '<br>');
     tr.appendChild(timeTd);
 
     // 각 카페별로 해당 시간대에 운영하는 세션 정보를 셀에 배치
@@ -424,3 +466,102 @@ function handleCafeSearch(e) {
     }
   });
 }
+
+// 2026년 대한민국 공휴일 목록
+const HOLIDAYS_2026 = [
+  '2026-01-01', // 신정
+  '2026-02-16', '2026-02-17', '2026-02-18', // 설날 연휴
+  '2026-03-01', '2026-03-02', // 삼일절 + 대체공휴일
+  '2026-05-05', // 어린이날
+  '2026-05-24', '2026-05-25', // 부처님오신날 + 대체공휴일
+  '2026-06-06', // 현충일
+  '2026-08-15', '2026-08-17', // 광복절 + 대체공휴일
+  '2026-09-24', '2026-09-25', '2026-09-26', '2026-09-28', // 추석 연휴 + 대체공휴일
+  '2026-10-03', '2026-10-05', // 개천절 + 대체공휴일
+  '2026-10-09', // 한글날
+  '2026-12-25'  // 성탄절
+];
+
+function renderQuickDates() {
+  const container = document.getElementById('quick-dates-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const dateFilter = document.getElementById('filter-date');
+  const today = new Date();
+  
+  // 향후 3주(21일)간의 날짜를 돌면서 주말(토/일) 및 공휴일 찾기
+  const quickDates = [];
+  for (let i = 0; i < 21; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    const dayOfWeek = d.getDay(); // 0: 일, 6: 토
+    
+    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+    const isHoliday = HOLIDAYS_2026.includes(dateStr);
+    
+    if (isWeekend || isHoliday) {
+      const dowNames = ['일', '월', '화', '수', '목', '금', '토'];
+      let label = `${d.getMonth() + 1}/${d.getDate()}(${dowNames[dayOfWeek]})`;
+      if (isHoliday) {
+        const holidayNames = {
+          '2026-01-01': '신정',
+          '2026-05-05': '어린이날',
+          '2026-06-06': '현충일',
+          '2026-08-15': '광복절',
+          '2026-08-17': '대체휴무',
+          '2026-10-03': '개천절',
+          '2026-10-05': '대체휴무',
+          '2026-10-09': '한글날',
+          '2026-12-25': '성탄절'
+        };
+        const hName = holidayNames[dateStr] || '공휴일';
+        label = `${d.getMonth() + 1}/${d.getDate()}(${hName})`;
+      }
+      
+      quickDates.push({
+        date: dateStr,
+        label,
+        isHoliday,
+        dayOfWeek
+      });
+    }
+  }
+
+  quickDates.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-date-btn';
+    if (item.isHoliday || item.dayOfWeek === 0) {
+      btn.classList.add('holiday');
+    }
+    
+    // 현재 선택된 날짜와 일치하면 active
+    if (dateFilter.value === item.date) {
+      btn.classList.add('active');
+    }
+    
+    btn.innerText = item.label;
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('.quick-date-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      dateFilter.value = item.date;
+      
+      const searchBtn = document.getElementById('search-now-btn');
+      searchBtn.disabled = true;
+      searchBtn.innerText = '⚡ 조회 중...';
+      try {
+        await fetchSelectedCafesLive();
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.innerText = '⚡ 조회';
+      }
+    });
+    container.appendChild(btn);
+  });
+}
+

@@ -363,16 +363,17 @@ main {
 
 #matrix-table th, #matrix-table td {
   border: 1px solid var(--border-color);
-  padding: 1rem;
-  vertical-align: top;
-  min-width: 160px;
+  padding: 0.4rem 0.5rem;
+  vertical-align: middle;
+  min-width: 110px;
+  font-size: 0.8rem;
 }
 
 #matrix-table th {
   background-color: #1a1a1a;
   color: var(--text-primary);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -383,7 +384,9 @@ main {
   left: 0;
   z-index: 3;
   background-color: var(--bg-secondary);
-  min-width: 200px;
+  min-width: 85px;
+  max-width: 85px;
+  text-align: center;
 }
 
 #matrix-table td:first-child {
@@ -392,8 +395,12 @@ main {
   background-color: var(--bg-secondary);
   z-index: 1;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   border-right: 2px solid var(--border-color);
+  text-align: center;
+  white-space: nowrap;
+  min-width: 85px;
+  max-width: 85px;
 }
 
 /* Session Cards */
@@ -541,9 +548,9 @@ main {
   }
   
   #matrix-table th, #matrix-table td {
-    padding: 0.6rem;
-    min-width: 120px;
-    font-size: 0.8rem;
+    padding: 0.3rem 0.4rem;
+    min-width: 95px;
+    font-size: 0.72rem;
   }
   
   #matrix-table th:first-child,
@@ -552,7 +559,8 @@ main {
     left: 0;
     background-color: var(--bg-secondary) !important;
     z-index: 10;
-    min-width: 130px;
+    min-width: 80px;
+    max-width: 80px;
     box-shadow: 3px 0 5px rgba(0,0,0,0.3);
   }
   
@@ -570,3 +578,128 @@ main {
   text-align: center;
   padding: 0.5rem;
 }
+
+/* Quick Date Chips */
+.filters-panel {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.2rem;
+}
+
+.date-picker-section, .quick-dates-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.date-picker-section {
+  min-width: 180px;
+}
+
+.quick-dates-section {
+  flex: 1;
+  min-width: 280px;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quick-dates-container {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quick-dates-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.quick-dates-container::-webkit-scrollbar-thumb {
+  background-color: #333333;
+  border-radius: 2px;
+}
+
+.quick-date-btn {
+  background-color: #1a1a1a;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.35rem 0.7rem;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.quick-date-btn:hover {
+  background-color: #262626;
+  border-color: #555555;
+}
+
+.quick-date-btn.active {
+  background-color: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+  font-weight: bold;
+}
+
+.quick-date-btn.holiday {
+  border-color: #552222;
+  color: #ff8888;
+}
+
+.quick-date-btn.holiday.active {
+  background-color: #ff8888;
+  color: #000000;
+  border-color: #ff8888;
+}
+
+/* Favorite Stars */
+.btn-fav {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 0.2rem;
+  transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.4rem;
+}
+
+.btn-fav.active {
+  color: #ffcc00;
+}
+
+.btn-fav:hover {
+  color: #ffdd44;
+}
+
+.region-title-left {
+  display: flex;
+  align-items: center;
+}
+
+.region-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+

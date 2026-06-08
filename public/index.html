@@ -43,18 +43,17 @@
     
     <section id="content" aria-label="예약 현황 매트릭스">
       <div class="filters-panel">
-        <label class="checkbox-label">
-          <input type="checkbox" id="filter-weekend" checked>
-          <span class="custom-checkbox"></span>
-          주말만 보기
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" id="filter-available">
-          <span class="custom-checkbox"></span>
-          공석 있는 날짜만 보기
-        </label>
-        <div class="date-picker-wrapper">
-          <input type="date" id="filter-date" aria-label="조회 일자 지정">
+        <div class="date-picker-section">
+          <span class="filter-label">📅 상세 날짜 선택:</span>
+          <div class="date-picker-wrapper">
+            <input type="date" id="filter-date" aria-label="조회 일자 지정">
+          </div>
+        </div>
+        <div class="quick-dates-section">
+          <span class="filter-label">⚡ 주말/공휴일 퀵 선택 (향후 3주):</span>
+          <div id="quick-dates-container" class="quick-dates-container">
+            <!-- Dynamically populated -->
+          </div>
         </div>
       </div>
       

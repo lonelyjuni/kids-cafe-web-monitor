@@ -519,7 +519,7 @@ function renderMatrix() {
     const slotStartMin = timeToMinutes(slot.start);
     
     const tr = document.createElement('tr');
-    tr.style.height = '48px'; // 높이를 살짝 키워 타임라인 채우기에 용이하게 함
+
     
     // 첫 번째 열: 시간대 명칭 표시 (시작 시간만 단일 표시하여 좌측 가로폭 절약!)
     const timeTd = document.createElement('td');

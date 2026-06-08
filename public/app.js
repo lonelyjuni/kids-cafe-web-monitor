@@ -493,8 +493,13 @@ function renderMatrix() {
 
   activeIds.forEach(id => {
     const th = document.createElement('th');
-    const rawName = cafes.find(c => c.id === id)?.name || id;
+    const fullCafe = cafes.find(c => c.id === id);
+    const rawName = fullCafe?.name || id;
     th.innerText = simplifyCafeName(rawName);
+    th.title = `${rawName} 예약 페이지로 이동`;
+    th.addEventListener('click', () => {
+      if (fullCafe) window.open(fullCafe.url, '_blank');
+    });
     tableHeader.appendChild(th);
   });
 

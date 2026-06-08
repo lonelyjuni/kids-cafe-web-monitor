@@ -376,6 +376,16 @@ main {
   height: auto;
 }
 
+#matrix-table th:not(:first-child) {
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+#matrix-table th:not(:first-child):hover {
+  background-color: #2a2a2a;
+  color: var(--accent);
+}
+
 #matrix-table th:first-child {
   left: 0;
   z-index: 3;

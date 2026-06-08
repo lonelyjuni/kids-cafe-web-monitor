@@ -587,12 +587,16 @@ function renderMatrix() {
         const card = document.createElement('div');
         card.className = `session-card ${matchedSession.available > 0 ? 'available' : ''}`;
         
-        // 회차 정보와 시간대를 1줄로 통합하고 공석 정보를 2번째 줄로 콤팩트하게 렌더링
+        const timeParts = matchedTimeRangeStr.split('~').map(s => s.trim());
+        const timeDisplay = timeParts.length === 2 ? `${timeParts[0]}<br>~ ${timeParts[1]}` : matchedTimeRangeStr;
+
+        // 글자가 가로로 잘리지 않도록 줄바꿈(엔터)을 도입하고 세로 간격을 정밀하게 밀착
         card.innerHTML = `
-          <div style="font-weight: 700; font-size: 0.65rem; margin-bottom: 1px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-            ${matchedSession.sessionName} (${matchedTimeRangeStr.replace(/\s+/g, '')})
+          <div style="font-weight: 700; font-size: 0.68rem; margin-bottom: 1px;">${matchedSession.sessionName}</div>
+          <div style="font-size: 0.62rem; opacity: 0.85; line-height: 1.1; margin-bottom: 2px;">
+            ${timeDisplay}
           </div>
-          <div style="font-size: 0.68rem; font-weight: 600; opacity: 0.95;">
+          <div style="font-size: 0.65rem; font-weight: 600; opacity: 0.95; border-top: 1px dashed rgba(255,255,255,0.12); padding-top: 1px; margin-top: 1px;">
             ${matchedSession.available}석 / ${matchedSession.total}석
           </div>
         `;

@@ -416,10 +416,17 @@ main {
   flex-direction: column;
   justify-content: center;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
 .session-card:last-child {
   margin-bottom: 0;
+}
+
+.session-card:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .session-card.available {
@@ -427,11 +434,11 @@ main {
   background-color: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  cursor: pointer;
 }
 
 .session-card.available:hover {
   background-color: rgba(255, 255, 255, 0.18);
+  border-color: var(--accent);
   transform: translateY(-2px);
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.25);
 }

@@ -569,12 +569,10 @@ function renderMatrix() {
           </div>
         `;
         
-        if (matchedSession.available > 0) {
-          card.style.cursor = 'pointer';
-          card.addEventListener('click', () => {
-            if (fullCafe) window.open(fullCafe.url, '_blank');
-          });
-        }
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+          if (fullCafe) window.open(fullCafe.url, '_blank');
+        });
         td.appendChild(card);
       } else {
         td.innerHTML = '<span class="status-closed">미운영</span>';

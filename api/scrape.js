@@ -82,10 +82,15 @@ export default async function handler(req, res) {
 
   try {
     const promises = targetIds.map(async (id) => {
-      const url = `https://umppa.seoul.go.kr/icare/user/kidsCafeResve/BD_selectKidsCafeResveCal.do?q_fcltyId=${id}&q_fcltyStle=2001&q_year=${year}&q_month=${String(month).padStart(2, '0')}`;
-      const response = await axios.get(url, AXIOS_CONFIG);
-      const parsed = parseHtmlCalendar(response.data, year, month);
-      results[id] = { dates: parsed };
+      try {
+        const url = `https://umppa.seoul.go.kr/icare/user/kidsCafeResve/BD_selectKidsCafeResveCal.do?q_fcltyId=${id}&q_fcltyStle=2001&q_year=${year}&q_month=${String(month).padStart(2, '0')}`;
+        const response = await axios.get(url, AXIOS_CONFIG);
+        const parsed = parseHtmlCalendar(response.data, year, month);
+        results[id] = { dates: parsed };
+      } catch (err) {
+        console.error(`Failed to scrape cafe ${id}:`, err.message);
+        results[id] = { dates: [], error: err.message };
+      }
     });
 
     await Promise.all(promises);

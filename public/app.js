@@ -160,12 +160,17 @@ async function fetchSelectedCafesLive() {
   const emptyState = document.getElementById('empty-state');
   if (selectedCafes.size === 0) {
     cacheData = {};
+    emptyState.innerHTML = '<p>좌측 패널에서 조회하고자 하는 키즈카페를 선택하세요.</p>';
     emptyState.style.display = 'flex';
     renderMatrix();
     return;
   }
   
-  emptyState.style.display = 'none';
+  // 조회 중 로딩 메시지 표시 및 기존 테이블 클리어
+  emptyState.innerHTML = '<p>⚡ 실시간 예약 현황을 조회하는 중입니다. 잠시만 기다려주세요...</p>';
+  emptyState.style.display = 'flex';
+  document.getElementById('matrix-header').innerHTML = '';
+  document.getElementById('matrix-body').innerHTML = '';
 
   const ids = Array.from(selectedCafes);
   const chunkSize = 3;
@@ -241,10 +246,22 @@ function triggerPushNotification(cafeName, date, sessionName, seats) {
 function renderMatrix() {
   const tableHeader = document.getElementById('matrix-header');
   const tableBody = document.getElementById('matrix-body');
+  const emptyState = document.getElementById('empty-state');
+  
   tableHeader.innerHTML = '';
   tableBody.innerHTML = '';
 
-  if (Object.keys(cacheData).length === 0) return;
+  if (selectedCafes.size === 0) {
+    emptyState.innerHTML = '<p>좌측 패널에서 조회하고자 하는 키즈카페를 선택하세요.</p>';
+    emptyState.style.display = 'flex';
+    return;
+  }
+
+  if (Object.keys(cacheData).length === 0) {
+    emptyState.innerHTML = '<p>⚠️ 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>';
+    emptyState.style.display = 'flex';
+    return;
+  }
 
   // 1. 기준 날짜 확인
   let targetDate = document.getElementById('filter-date').value;
@@ -255,12 +272,16 @@ function renderMatrix() {
 
   // 2. 선택된 키즈카페 목록 (가로축 열 헤더가 됨)
   const activeIds = Object.keys(cacheData).filter(id => selectedCafes.has(id));
-  if (activeIds.length === 0) return;
+  if (activeIds.length === 0) {
+    emptyState.innerHTML = '<p>선택된 지점이 없거나 데이터가 비어 있습니다.</p>';
+    emptyState.style.display = 'flex';
+    return;
+  }
 
   // 3. 해당 날짜에 매칭되는 지점들의 시간대(time) 목록 유니크 추출 (세로축 행 헤더가 됨)
   let allTimes = new Set();
   activeIds.forEach(id => {
-    const dateData = cacheData[id]?.dates.find(d => d.date === targetDate);
+    const dateData = cacheData[id]?.dates?.find(d => d.date === targetDate);
     if (dateData && dateData.sessions) {
       dateData.sessions.forEach(s => {
         if (s.time) allTimes.add(s.time);
@@ -268,6 +289,15 @@ function renderMatrix() {
     }
   });
   const sortedTimes = Array.from(allTimes).sort(); // 시간대 정렬 (예: 09:30~11:30, 13:00~15:00 등)
+
+  if (sortedTimes.length === 0) {
+    emptyState.innerHTML = `<p>📅 ${targetDate} 날짜에 운영 정보 또는 매칭되는 시간대 세션이 없습니다.</p>`;
+    emptyState.style.display = 'flex';
+    return;
+  }
+
+  // 데이터가 성공적으로 있으면 빈 화면 영역 제거
+  emptyState.style.display = 'none';
 
   // 4. 테이블 가로 열 헤더 그리기 ("시간대" + 선택한 카페명들)
   const timeHeader = document.createElement('th');
@@ -296,7 +326,7 @@ function renderMatrix() {
     // 각 카페별로 해당 시간대에 운영하는 세션 정보를 셀에 배치
     activeIds.forEach(id => {
       const td = document.createElement('td');
-      const dateData = cacheData[id]?.dates.find(d => d.date === targetDate);
+      const dateData = cacheData[id]?.dates?.find(d => d.date === targetDate);
       const fullCafe = cafes.find(c => c.id === id);
       
       if (dateData && dateData.sessions) {

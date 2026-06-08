@@ -364,7 +364,7 @@ main {
 }
 
 #matrix-table tr {
-  height: 42px;
+  height: 25px;
 }
 
 #matrix-table th {
@@ -594,12 +594,12 @@ main {
 
 .status-closed {
   color: var(--text-muted);
-  font-size: 0.8rem;
-  font-style: italic;
-  opacity: 0.6;
+  font-size: 0.65rem;
+  font-style: normal;
+  opacity: 0.35;
   display: block;
   text-align: center;
-  padding: 0.5rem;
+  padding: 1px 0;
 }
 
 /* Quick Date Chips */

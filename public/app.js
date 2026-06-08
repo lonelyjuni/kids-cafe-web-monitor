@@ -226,7 +226,7 @@ function renderSidebar() {
       item.innerHTML = `
         <button class="btn-fav-cafe ${isFav ? 'active' : ''}" data-cafe-id="${cafe.id}">${isFav ? '★' : '☆'}</button>
         <input type="checkbox" value="${cafe.id}" ${isChecked}>
-        <span>${cafe.name.replace(region, '').trim()}</span>
+        <span>${simplifyCafeName(cafe.name)}</span>
       `;
       
       const cb = item.querySelector('input');

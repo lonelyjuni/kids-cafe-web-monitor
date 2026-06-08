@@ -407,13 +407,18 @@ main {
 .session-card {
   background-color: rgba(34, 34, 34, 0.4);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
-  font-size: 0.8rem;
-  line-height: 1.4;
+  border-radius: 6px;
+  padding: 0.3rem 0.4rem;
+  margin-bottom: 0;
+  font-size: 0.72rem;
+  line-height: 1.3;
   color: var(--text-muted);
   transition: var(--transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .session-card:last-child {
@@ -435,7 +440,7 @@ main {
 }
 
 .session-card b {
-  font-size: 1rem;
+  font-size: 0.8rem;
   color: var(--accent);
 }
 
@@ -618,19 +623,8 @@ main {
 .quick-dates-container {
   display: flex;
   gap: 0.4rem;
-  overflow-x: auto;
+  flex-wrap: wrap;
   padding-bottom: 0.2rem;
-  scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-}
-
-.quick-dates-container::-webkit-scrollbar {
-  height: 4px;
-}
-
-.quick-dates-container::-webkit-scrollbar-thumb {
-  background-color: #333333;
-  border-radius: 2px;
 }
 
 .quick-date-btn {
@@ -669,14 +663,14 @@ main {
   border-color: #ff8888;
 }
 
-/* Favorite Stars */
-.btn-fav {
+/* Cafe Favorite Stars */
+.btn-fav-cafe {
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 1.1rem;
-  padding: 0 0.2rem;
+  font-size: 1rem;
+  padding: 0 0.3rem;
   transition: color 0.15s ease;
   display: inline-flex;
   align-items: center;
@@ -684,12 +678,24 @@ main {
   margin-right: 0.4rem;
 }
 
-.btn-fav.active {
+.btn-fav-cafe.active {
   color: #ffcc00;
 }
 
-.btn-fav:hover {
+.btn-fav-cafe:hover {
   color: #ffdd44;
+}
+
+.fav-regions-accordion {
+  border: 1px dashed #555555 !important;
+  background-color: #121212 !important;
+  margin-bottom: 0.8rem;
+  border-radius: 6px;
+}
+
+.fav-region-title {
+  color: #ffcc00 !important;
+  font-weight: bold !important;
 }
 
 .region-title-left {
@@ -702,4 +708,5 @@ main {
   justify-content: space-between;
   align-items: center;
 }
+
 

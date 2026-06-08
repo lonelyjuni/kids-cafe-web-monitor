@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>서울형 키즈카페 실시간 예약 현황 모니터링</title>
+  <title>서울형 키즈카페 조회</title>
   <meta name="description" content="서울시 내 모든 자치구의 서울형 키즈카페 실시간 공석 현황을 파악하고 주기적으로 모니터링하는 세련된 대시보드 서비스입니다.">
   <link rel="stylesheet" href="index.css?v=1.0.2">
   <!-- Google Fonts Outfit & Inter -->
@@ -13,7 +13,7 @@
   <header>
     <div class="logo">
       <span class="icon">🎪</span>
-      <h1>Kids Cafe Live</h1>
+      <h1>서울형 키즈카페 조회</h1>
     </div>
     <div class="header-controls">
       <button id="sidebar-toggle" class="btn btn-secondary">🔍 지역/지점 선택</button>
@@ -43,16 +43,16 @@
     
     <section id="content" aria-label="예약 현황 매트릭스">
       <div class="filters-panel">
-        <div class="date-picker-section">
-          <span class="filter-label">📅 상세 날짜 선택:</span>
-          <div class="date-picker-wrapper">
-            <input type="date" id="filter-date" aria-label="조회 일자 지정">
-          </div>
-        </div>
         <div class="quick-dates-section">
-          <span class="filter-label">⚡ 주말/공휴일 퀵 선택 (향후 3주):</span>
+          <span class="filter-label">⚡ 주말/공휴일 퀵 선택 (향후 3주)</span>
           <div id="quick-dates-container" class="quick-dates-container">
             <!-- Dynamically populated -->
+          </div>
+        </div>
+        <div class="date-picker-section">
+          <span class="filter-label">📅 상세 날짜 선택</span>
+          <div class="date-picker-wrapper">
+            <input type="date" id="filter-date" aria-label="조회 일자 지정">
           </div>
         </div>
       </div>

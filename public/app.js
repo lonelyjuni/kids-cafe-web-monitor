@@ -103,29 +103,81 @@ function renderSidebar() {
   const container = document.getElementById('regions-container');
   container.innerHTML = '';
   
-  const favoriteRegions = JSON.parse(localStorage.getItem('favoriteRegions') || '[]');
-  const allRegions = [...new Set(cafes.map(c => c.region))].sort();
+  const favoriteCafes = JSON.parse(localStorage.getItem('favoriteCafes') || '[]');
 
-  // 즐겨찾기 자치구를 맨 앞으로 정렬
-  const sortedRegions = allRegions.sort((a, b) => {
-    const aFav = favoriteRegions.includes(a);
-    const bFav = favoriteRegions.includes(b);
-    if (aFav && !bFav) return -1;
-    if (!aFav && bFav) return 1;
-    return a.localeCompare(b);
-  });
+  // 1. 즐겨찾는 지점 아코디언 섹션 생성 (즐겨찾기한 지점이 1개 이상 있을 때만 표시)
+  if (favoriteCafes.length > 0) {
+    const favDiv = document.createElement('div');
+    favDiv.className = 'region-accordion fav-regions-accordion';
+    
+    const favTitle = document.createElement('div');
+    favTitle.className = 'region-title fav-region-title';
+    favTitle.innerHTML = `<span>⭐ 즐겨찾는 지점 (${favoriteCafes.length})</span>`;
+    
+    const favList = document.createElement('div');
+    favList.className = 'cafe-list';
+    favList.style.display = 'block'; // 즐겨찾기 목록은 기본적으로 열어둠
 
-  sortedRegions.forEach(region => {
+    favoriteCafes.forEach(cafeId => {
+      const cafe = cafes.find(c => c.id === cafeId);
+      if (cafe) {
+        const item = document.createElement('label');
+        item.className = 'cafe-item';
+        const isChecked = selectedCafes.has(cafe.id) ? 'checked' : '';
+        item.innerHTML = `
+          <button class="btn-fav-cafe active" data-cafe-id="${cafe.id}">★</button>
+          <input type="checkbox" value="${cafe.id}" ${isChecked}>
+          <span>[${cafe.region}] ${simplifyCafeName(cafe.name)}</span>
+        `;
+        
+        // 체크박스 핸들러
+        const cb = item.querySelector('input');
+        cb.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            selectedCafes.add(cafe.id);
+          } else {
+            selectedCafes.delete(cafe.id);
+          }
+          // 동기화를 위해 사이드바 전체 다시 그리기
+          renderSidebar();
+          renderMatrix();
+        });
+
+        // 별표 핸들러
+        const favBtn = item.querySelector('.btn-fav-cafe');
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          let favs = JSON.parse(localStorage.getItem('favoriteCafes') || '[]');
+          favs = favs.filter(id => id !== cafe.id);
+          localStorage.setItem('favoriteCafes', JSON.stringify(favs));
+          renderSidebar();
+        });
+
+        favList.appendChild(item);
+      }
+    });
+
+    favDiv.appendChild(favTitle);
+    favDiv.appendChild(favList);
+    container.appendChild(favDiv);
+    
+    favTitle.addEventListener('click', () => {
+      const isVisible = favList.style.display === 'block';
+      favList.style.display = isVisible ? 'none' : 'block';
+    });
+  }
+
+  // 2. 일반 자치구 목록 렌더링
+  const regions = [...new Set(cafes.map(c => c.region))].sort();
+
+  regions.forEach(region => {
     const div = document.createElement('div');
     div.className = 'region-accordion';
     
     const title = document.createElement('div');
     title.className = 'region-title';
-    
-    const isFav = favoriteRegions.includes(region);
     title.innerHTML = `
       <div class="region-title-left">
-        <button class="btn-fav ${isFav ? 'active' : ''}" data-region="${region}">${isFav ? '★' : '☆'}</button>
         <span>📂 ${region}</span>
       </div>
       <button class="btn-region-sync" data-region="${region}">🔄</button>
@@ -138,8 +190,14 @@ function renderSidebar() {
     regionCafes.forEach(cafe => {
       const item = document.createElement('label');
       item.className = 'cafe-item';
+      
+      const isFav = favoriteCafes.includes(cafe.id);
       const isChecked = selectedCafes.has(cafe.id) ? 'checked' : '';
-      item.innerHTML = `<input type="checkbox" value="${cafe.id}" ${isChecked}> <span>${cafe.name.replace(region, '').trim()}</span>`;
+      item.innerHTML = `
+        <button class="btn-fav-cafe ${isFav ? 'active' : ''}" data-cafe-id="${cafe.id}">${isFav ? '★' : '☆'}</button>
+        <input type="checkbox" value="${cafe.id}" ${isChecked}>
+        <span>${cafe.name.replace(region, '').trim()}</span>
+      `;
       
       const cb = item.querySelector('input');
       cb.addEventListener('change', (e) => {
@@ -148,23 +206,24 @@ function renderSidebar() {
         } else {
           selectedCafes.delete(cafe.id);
         }
+        renderSidebar(); // 체크 동기화를 위해 리렌더링
         renderMatrix();
       });
-      list.appendChild(item);
-    });
 
-    // 별표(즐겨찾기) 클릭 리스너 바인딩
-    const favBtn = title.querySelector('.btn-fav');
-    favBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      let favs = JSON.parse(localStorage.getItem('favoriteRegions') || '[]');
-      if (favs.includes(region)) {
-        favs = favs.filter(r => r !== region);
-      } else {
-        favs.push(region);
-      }
-      localStorage.setItem('favoriteRegions', JSON.stringify(favs));
-      renderSidebar();
+      const favBtn = item.querySelector('.btn-fav-cafe');
+      favBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        let favs = JSON.parse(localStorage.getItem('favoriteCafes') || '[]');
+        if (favs.includes(cafe.id)) {
+          favs = favs.filter(id => id !== cafe.id);
+        } else {
+          favs.push(cafe.id);
+        }
+        localStorage.setItem('favoriteCafes', JSON.stringify(favs));
+        renderSidebar();
+      });
+
+      list.appendChild(item);
     });
 
     title.addEventListener('click', (e) => {
@@ -181,17 +240,19 @@ function renderSidebar() {
             selectedCafes.delete(cb.value);
           }
         });
+        renderSidebar(); // 체크 동기화
         renderMatrix();
         return;
       }
       
-      if (e.target.closest('.btn-fav')) {
-        return; // 별표 클릭 시 아코디언이 토글되지 않도록 차단
-      }
-      
       const isVisible = list.style.display === 'block';
       // Close all others
-      document.querySelectorAll('.cafe-list').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.cafe-list').forEach(el => {
+        // 즐겨찾기 목록은 강제로 닫지 않음
+        if (!el.parentNode.classList.contains('fav-regions-accordion')) {
+          el.style.display = 'none';
+        }
+      });
       list.style.display = isVisible ? 'none' : 'block';
     });
 
@@ -324,22 +385,52 @@ function renderMatrix() {
     return;
   }
 
-  // 3. 해당 날짜에 매칭되는 지점들의 시간대(time) 목록 유니크 추출 (세로축 행 헤더가 됨)
-  let allTimes = new Set();
+  // 분 단위 변환 헬퍼 함수
+  function timeToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  // 3. 동적 30분 단위 타임 슬롯 정의
+  // 선택한 모든 카페들의 세션 시간대 중 최솟값과 최댓값을 구해서 슬롯 영역을 설정함 (화면 낭비 방지)
+  let minTimeMin = 24 * 60; // 1440분
+  let maxTimeMin = 0;
+  let hasAnySession = false;
+
   activeIds.forEach(id => {
     const dateData = cacheData[id]?.dates?.find(d => d.date === targetDate);
     if (dateData && dateData.sessions) {
       dateData.sessions.forEach(s => {
-        if (s.time) allTimes.add(s.time);
+        const range = s.time.split('~').map(str => str.trim());
+        if (range.length === 2) {
+          hasAnySession = true;
+          const startMin = timeToMinutes(range[0]);
+          const endMin = timeToMinutes(range[1]);
+          if (startMin < minTimeMin) minTimeMin = startMin;
+          if (endMin > maxTimeMin) maxTimeMin = endMin;
+        }
       });
     }
   });
-  const sortedTimes = Array.from(allTimes).sort(); // 시간대 정렬 (예: 09:30~11:30, 13:00~15:00 등)
 
-  if (sortedTimes.length === 0) {
-    emptyState.innerHTML = `<p>📅 ${targetDate} 날짜에 운영 정보 또는 매칭되는 시간대 세션이 없습니다.</p>`;
+  if (!hasAnySession) {
+    emptyState.innerHTML = `<p>📅 ${targetDate} 날짜에 운영 정보 또는 세션이 없습니다.</p>`;
     emptyState.style.display = 'flex';
     return;
+  }
+
+  // 30분 경계로 내림/올림 처리
+  const startSlotMin = Math.floor(minTimeMin / 30) * 30;
+  const endSlotMin = Math.ceil(maxTimeMin / 30) * 30;
+
+  const slots = [];
+  for (let m = startSlotMin; m < endSlotMin; m += 30) {
+    const sh = String(Math.floor(m / 60)).padStart(2, '0');
+    const sm = String(m % 60).padStart(2, '0');
+    const eh = String(Math.floor((m + 30) / 60)).padStart(2, '0');
+    const em = String((m + 30) % 60).padStart(2, '0');
+    slots.push({ start: `${sh}:${sm}`, end: `${eh}:${em}` });
   }
 
   // 데이터가 성공적으로 있으면 빈 화면 영역 제거
@@ -357,48 +448,74 @@ function renderMatrix() {
     tableHeader.appendChild(th);
   });
 
-  // 5. 필터 값 읽기 (체크박스 제거로 인해 항상 모든 세션 표시)
-  const isAvailableOnly = false;
+  // 5. rowspan 건너뛰기 매트릭스 초기화 [slotIndex][cafeIndex]
+  const skipMatrix = Array.from({ length: slots.length }, () => Array(activeIds.length).fill(false));
 
   // 6. 각 시간대(Row)별로 루프 돌려 행 생성
-  sortedTimes.forEach(time => {
+  slots.forEach((slot, slotIdx) => {
+    const slotStartMin = timeToMinutes(slot.start);
+    const slotEndMin = timeToMinutes(slot.end);
+    
     const tr = document.createElement('tr');
+    tr.style.height = '42px'; // 수강신청 시간표 느낌의 일관성 있는 행 높이
     
     // 첫 번째 열: 시간대 명칭 표시
     const timeTd = document.createElement('td');
-    timeTd.innerHTML = time.replace(' ~ ', '<br>');
+    timeTd.innerHTML = `${slot.start}<br>~ ${slot.end}`;
     tr.appendChild(timeTd);
 
     // 각 카페별로 해당 시간대에 운영하는 세션 정보를 셀에 배치
-    activeIds.forEach(id => {
+    activeIds.forEach((id, cafeIdx) => {
+      if (skipMatrix[slotIdx][cafeIdx]) {
+        return; // 이전 슬롯에서 rowspan에 의해 이미 그려진 셀이므로 그리지 않음
+      }
+
       const td = document.createElement('td');
       const dateData = cacheData[id]?.dates?.find(d => d.date === targetDate);
       const fullCafe = cafes.find(c => c.id === id);
       
+      let matchedSession = null;
       if (dateData && dateData.sessions) {
-        // 해당 시간대(time)와 정확히 일치하는 세션(들) 찾기
-        const matchedSessions = dateData.sessions.filter(s => s.time === time);
-        
-        matchedSessions.forEach(session => {
-          if (isAvailableOnly && session.available === 0) return;
-
-          const card = document.createElement('div');
-          card.className = `session-card ${session.available > 0 ? 'available' : ''}`;
-          
-          // 회차 이름 및 정보 렌더링
-          card.innerHTML = `${session.sessionName}<br><b>${session.available}석</b> / ${session.total}석`;
-          
-          if (session.available > 0) {
-            card.addEventListener('click', () => {
-              if (fullCafe) window.open(fullCafe.url, '_blank');
-            });
+        // 이 슬롯의 시작 시각에 시작되는 세션을 찾음
+        matchedSession = dateData.sessions.find(s => {
+          const range = s.time.split('~').map(str => str.trim());
+          if (range.length === 2) {
+            const startMin = timeToMinutes(range[0]);
+            return startMin === slotStartMin;
           }
-          td.appendChild(card);
+          return false;
         });
       }
-      
-      // 데이터가 아예 없는 경우
-      if (td.children.length === 0) {
+
+      if (matchedSession) {
+        const range = matchedSession.time.split('~').map(str => str.trim());
+        const startMin = timeToMinutes(range[0]);
+        const endMin = timeToMinutes(range[1]);
+        const durationMin = endMin - startMin;
+        const span = Math.max(1, Math.round(durationMin / 30));
+
+        td.rowSpan = span;
+
+        // 후속 슬롯들에 대해 skip 설정
+        for (let s = 1; s < span; s++) {
+          if (slotIdx + s < slots.length) {
+            skipMatrix[slotIdx + s][cafeIdx] = true;
+          }
+        }
+
+        const card = document.createElement('div');
+        card.className = `session-card ${matchedSession.available > 0 ? 'available' : ''}`;
+        
+        // 회차 이름 및 정보 렌더링
+        card.innerHTML = `${matchedSession.sessionName}<br><b>${matchedSession.available}석</b> / ${matchedSession.total}석`;
+        
+        if (matchedSession.available > 0) {
+          card.addEventListener('click', () => {
+            if (fullCafe) window.open(fullCafe.url, '_blank');
+          });
+        }
+        td.appendChild(card);
+      } else {
         td.innerHTML = '<span class="status-closed">미운영</span>';
       }
       tr.appendChild(td);

@@ -42,17 +42,23 @@
     </aside>
     
     <section id="content" aria-label="예약 현황 매트릭스">
-      <div class="filters-panel">
-        <div class="quick-dates-section">
-          <span class="filter-label">⚡ 주말/공휴일 퀵 선택 (향후 3주)</span>
-          <div id="quick-dates-container" class="quick-dates-container">
-            <!-- Dynamically populated -->
-          </div>
+      <div id="filters-panel" class="filters-panel">
+        <div id="filters-toggle-header" class="filters-toggle-header">
+          <span id="filters-summary-text" class="filters-summary-text">📅 날짜 선택 완료 [클릭하여 변경]</span>
+          <span id="filters-toggle-icon" class="filters-toggle-icon">▲</span>
         </div>
-        <div class="date-picker-section">
-          <span class="filter-label">📅 상세 날짜 선택</span>
-          <div class="date-picker-wrapper">
-            <input type="date" id="filter-date" aria-label="조회 일자 지정">
+        <div id="filters-content-area" class="filters-content-area">
+          <div class="quick-dates-section">
+            <span class="filter-label">⚡ 주말/공휴일 퀵 선택 (향후 3주)</span>
+            <div id="quick-dates-container" class="quick-dates-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+          <div class="date-picker-section">
+            <span class="filter-label">📅 상세 날짜 선택</span>
+            <div class="date-picker-wrapper">
+              <input type="date" id="filter-date" aria-label="조회 일자 지정">
+            </div>
           </div>
         </div>
       </div>

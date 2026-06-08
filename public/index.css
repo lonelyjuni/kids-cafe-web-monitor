@@ -301,15 +301,7 @@ main {
   gap: 1.5rem;
 }
 
-.filters-panel {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  background-color: var(--bg-secondary);
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
+
 
 .checkbox-label {
   display: flex;
@@ -592,14 +584,63 @@ main {
 /* Quick Date Chips */
 .filters-panel {
   display: flex;
-  gap: 1.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 1rem;
+  flex-direction: column;
   background-color: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-color);
   margin-bottom: 1.2rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filters-toggle-header {
+  background-color: #161616;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  font-weight: 600;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.filters-toggle-header:hover {
+  background-color: #202020;
+}
+
+.filters-toggle-icon {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+.filters-content-area {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease, opacity 0.2s ease;
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* 접혔을 때의 스타일 */
+.filters-panel.collapsed .filters-content-area {
+  max-height: 0;
+  padding: 0 1rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.filters-panel.collapsed {
+  margin-bottom: 0.6rem;
+}
+
+.filters-panel.collapsed .filters-toggle-icon {
+  transform: rotate(180deg);
 }
 
 .date-picker-section, .quick-dates-section {
@@ -627,9 +668,13 @@ main {
 
 .quick-dates-container {
   display: flex;
+  flex-direction: column;
   gap: 0.4rem;
-  flex-wrap: wrap;
-  padding-bottom: 0.2rem;
+}
+
+.quick-week-row {
+  display: flex;
+  gap: 0.4rem;
 }
 
 .quick-date-btn {

@@ -65,11 +65,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('filter-date').addEventListener('input', () => {
     // 상세 날짜 선택 시 퀵 칩의 선택 상태 제거
     document.querySelectorAll('.quick-date-btn').forEach(btn => btn.classList.remove('active'));
+    updateFiltersSummary();
     renderMatrix();
   });
 
   // 퀵 일자 칩 렌더링
   renderQuickDates();
+
+  // 필터 패널 접기/펼치기 및 초기 요약 바 세팅
+  const filtersPanel = document.getElementById('filters-panel');
+  const filtersToggleHeader = document.getElementById('filters-toggle-header');
+  if (filtersToggleHeader && filtersPanel) {
+    filtersToggleHeader.addEventListener('click', () => {
+      filtersPanel.classList.toggle('collapsed');
+    });
+  }
+  updateFiltersSummary();
 
   // 모바일 사이드바 토글 및 오버레이 바인딩
   const sidebar = document.getElementById('sidebar');
@@ -97,6 +108,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     btn.innerText = '⚡ 조회 중...';
     try {
       await fetchSelectedCafesLive();
+      if (filtersPanel) {
+        filtersPanel.classList.add('collapsed'); // 조회 완료 후 패널 자동 접기
+      }
     } finally {
       btn.disabled = false;
       btn.innerText = '⚡ 조회';
@@ -687,14 +701,22 @@ function renderQuickDates() {
     }
   }
 
-  quickDates.forEach(item => {
+  let activeRow = null;
+
+  quickDates.forEach((item, idx) => {
+    // 토요일(6)이거나 첫 시작 또는 행이 없을 때 새로운 주말 행(div) 생성
+    if (item.dayOfWeek === 6 || !activeRow) {
+      activeRow = document.createElement('div');
+      activeRow.className = 'quick-week-row';
+      container.appendChild(activeRow);
+    }
+
     const btn = document.createElement('button');
     btn.className = 'quick-date-btn';
     if (item.isHoliday || item.dayOfWeek === 0) {
       btn.classList.add('holiday');
     }
     
-    // 현재 선택된 날짜와 일치하면 active
     if (dateFilter.value === item.date) {
       btn.classList.add('active');
     }
@@ -705,17 +727,34 @@ function renderQuickDates() {
       btn.classList.add('active');
       dateFilter.value = item.date;
       
+      updateFiltersSummary();
+      
       const searchBtn = document.getElementById('search-now-btn');
       searchBtn.disabled = true;
       searchBtn.innerText = '⚡ 조회 중...';
       try {
         await fetchSelectedCafesLive();
+        
+        // 날짜를 선택하여 조회가 끝나면 자동으로 필터 패널 접기
+        const panel = document.getElementById('filters-panel');
+        if (panel) panel.classList.add('collapsed');
       } finally {
         searchBtn.disabled = false;
         searchBtn.innerText = '⚡ 조회';
       }
     });
-    container.appendChild(btn);
+    activeRow.appendChild(btn);
   });
 }
+
+function updateFiltersSummary() {
+  const dateVal = document.getElementById('filter-date').value;
+  const summaryText = document.getElementById('filters-summary-text');
+  if (dateVal && summaryText) {
+    const d = new Date(dateVal);
+    const dowNames = ['일', '월', '화', '수', '목', '금', '토'];
+    summaryText.innerHTML = `📅 현재 조회 날짜: <b>${dateVal} (${dowNames[d.getDay()]})</b> <span style="font-size:0.7rem; font-weight:normal; opacity:0.6; margin-left:8px;">[터치하여 날짜 변경]</span>`;
+  }
+}
+
 

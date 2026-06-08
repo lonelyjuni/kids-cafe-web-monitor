@@ -363,29 +363,33 @@ main {
 
 #matrix-table th, #matrix-table td {
   border: 1px solid var(--border-color);
-  padding: 0.4rem 0.5rem;
-  vertical-align: middle;
-  min-width: 110px;
-  font-size: 0.8rem;
+  padding: 2px;
+  vertical-align: stretch; /* 세션 카드가 셀 높이를 꽉 채우도록 함 */
+  min-width: 90px;
+  max-width: 95px;
+  font-size: 0.75rem;
+  height: 1px; /* td height: 100% 작동을 위한 핵 */
 }
 
 #matrix-table th {
   background-color: #1a1a1a;
   color: var(--text-primary);
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   position: sticky;
   top: 0;
   z-index: 2;
   text-align: center;
+  padding: 0.4rem 0.2rem;
+  height: auto;
 }
 
 #matrix-table th:first-child {
   left: 0;
   z-index: 3;
   background-color: var(--bg-secondary);
-  min-width: 85px;
-  max-width: 85px;
+  min-width: 55px;
+  max-width: 55px;
   text-align: center;
 }
 
@@ -395,12 +399,13 @@ main {
   background-color: var(--bg-secondary);
   z-index: 1;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   border-right: 2px solid var(--border-color);
   text-align: center;
   white-space: nowrap;
-  min-width: 85px;
-  max-width: 85px;
+  min-width: 55px;
+  max-width: 55px;
+  vertical-align: middle;
 }
 
 /* Session Cards */
@@ -553,9 +558,9 @@ main {
   }
   
   #matrix-table th, #matrix-table td {
-    padding: 0.3rem 0.4rem;
-    min-width: 95px;
-    font-size: 0.72rem;
+    padding: 2px;
+    min-width: 75px;
+    font-size: 0.7rem;
   }
   
   #matrix-table th:first-child,
@@ -564,8 +569,8 @@ main {
     left: 0;
     background-color: var(--bg-secondary) !important;
     z-index: 10;
-    min-width: 80px;
-    max-width: 80px;
+    min-width: 50px;
+    max-width: 50px;
     box-shadow: 3px 0 5px rgba(0,0,0,0.3);
   }
   

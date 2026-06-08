@@ -30,20 +30,28 @@ function getUpcomingWeekend() {
 }
 
 let cafes = [];
+let cafeTimes = {};
 let selectedCafes = new Set();
 let monitorIntervalId = null;
 let isMuted = false;
 let cacheData = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Load Master cafes.json
+  // 1. Load Master cafes.json & cafe_times.json
   try {
-    const res = await fetch('cafes.json');
-    if (!res.ok) throw new Error('Network response was not ok');
-    cafes = await res.json();
+    const [resCafes, resTimes] = await Promise.all([
+      fetch('cafes.json'),
+      fetch('cafe_times.json')
+    ]);
+    if (!resCafes.ok) throw new Error('Failed to load cafes.json');
+    cafes = await resCafes.json();
+    
+    if (resTimes.ok) {
+      cafeTimes = await resTimes.json();
+    }
     renderSidebar();
   } catch (e) {
-    console.error('Failed to load cafes.json', e);
+    console.error('Failed to load master assets', e);
   }
 
   const dateFilter = document.getElementById('filter-date');
@@ -392,6 +400,28 @@ function renderMatrix() {
     return h * 60 + m;
   }
 
+  // 지점별 실제 회차 시간대 조회 헬퍼 함수
+  function getActualTimeRange(cafeId, sessionName, fallbackTime) {
+    const sessionNumMatch = sessionName.match(/(\d+회)/);
+    const sessionNum = sessionNumMatch ? sessionNumMatch[1] : null;
+    if (sessionNum && cafeTimes[cafeId] && cafeTimes[cafeId][sessionNum]) {
+      return cafeTimes[cafeId][sessionNum];
+    }
+    return fallbackTime;
+  }
+
+  // 세션의 시작/종료 시간에 상응하는 30분 내림/올림 슬롯 시간 계산 헬퍼 함수
+  function getAlignedSlotMinutes(timeRangeStr) {
+    const range = timeRangeStr.split('~').map(str => str.trim());
+    if (range.length !== 2) return null;
+    const startMin = timeToMinutes(range[0]);
+    const endMin = timeToMinutes(range[1]);
+    
+    const alignedStart = Math.floor(startMin / 30) * 30;
+    const alignedEnd = Math.ceil(endMin / 30) * 30;
+    return { startMin, endMin, alignedStart, alignedEnd };
+  }
+
   // 3. 동적 30분 단위 타임 슬롯 정의
   // 선택한 모든 카페들의 세션 시간대 중 최솟값과 최댓값을 구해서 슬롯 영역을 설정함 (화면 낭비 방지)
   let minTimeMin = 24 * 60; // 1440분
@@ -402,13 +432,12 @@ function renderMatrix() {
     const dateData = cacheData[id]?.dates?.find(d => d.date === targetDate);
     if (dateData && dateData.sessions) {
       dateData.sessions.forEach(s => {
-        const range = s.time.split('~').map(str => str.trim());
-        if (range.length === 2) {
+        const timeRangeStr = getActualTimeRange(id, s.sessionName, s.time);
+        const aligned = getAlignedSlotMinutes(timeRangeStr);
+        if (aligned) {
           hasAnySession = true;
-          const startMin = timeToMinutes(range[0]);
-          const endMin = timeToMinutes(range[1]);
-          if (startMin < minTimeMin) minTimeMin = startMin;
-          if (endMin > maxTimeMin) maxTimeMin = endMin;
+          if (aligned.alignedStart < minTimeMin) minTimeMin = aligned.alignedStart;
+          if (aligned.alignedEnd > maxTimeMin) maxTimeMin = aligned.alignedEnd;
         }
       });
     }
@@ -420,12 +449,9 @@ function renderMatrix() {
     return;
   }
 
-  // 30분 경계로 내림/올림 처리
-  const startSlotMin = Math.floor(minTimeMin / 30) * 30;
-  const endSlotMin = Math.ceil(maxTimeMin / 30) * 30;
-
+  // 30분 경계로 슬롯 배열 생성
   const slots = [];
-  for (let m = startSlotMin; m < endSlotMin; m += 30) {
+  for (let m = minTimeMin; m < maxTimeMin; m += 30) {
     const sh = String(Math.floor(m / 60)).padStart(2, '0');
     const sm = String(m % 60).padStart(2, '0');
     const eh = String(Math.floor((m + 30) / 60)).padStart(2, '0');
@@ -438,7 +464,7 @@ function renderMatrix() {
 
   // 4. 테이블 가로 열 헤더 그리기 ("시간대" + 선택한 카페명들)
   const timeHeader = document.createElement('th');
-  timeHeader.innerText = '운영 시간대';
+  timeHeader.innerText = '시간';
   tableHeader.appendChild(timeHeader);
 
   activeIds.forEach(id => {
@@ -454,20 +480,19 @@ function renderMatrix() {
   // 6. 각 시간대(Row)별로 루프 돌려 행 생성
   slots.forEach((slot, slotIdx) => {
     const slotStartMin = timeToMinutes(slot.start);
-    const slotEndMin = timeToMinutes(slot.end);
     
     const tr = document.createElement('tr');
-    tr.style.height = '42px'; // 수강신청 시간표 느낌의 일관성 있는 행 높이
+    tr.style.height = '48px'; // 높이를 살짝 키워 타임라인 채우기에 용이하게 함
     
-    // 첫 번째 열: 시간대 명칭 표시
+    // 첫 번째 열: 시간대 명칭 표시 (시작 시간만 단일 표시하여 좌측 가로폭 절약!)
     const timeTd = document.createElement('td');
-    timeTd.innerHTML = `${slot.start}<br>~ ${slot.end}`;
+    timeTd.innerText = slot.start;
     tr.appendChild(timeTd);
 
     // 각 카페별로 해당 시간대에 운영하는 세션 정보를 셀에 배치
     activeIds.forEach((id, cafeIdx) => {
       if (skipMatrix[slotIdx][cafeIdx]) {
-        return; // 이전 슬롯에서 rowspan에 의해 이미 그려진 셀이므로 그리지 않음
+        return; // 이전 슬롯에서 rowspan에 의해 이미 그려진 셀이므로 건너뜀
       }
 
       const td = document.createElement('td');
@@ -475,23 +500,28 @@ function renderMatrix() {
       const fullCafe = cafes.find(c => c.id === id);
       
       let matchedSession = null;
+      let matchedTimeRangeStr = null;
+      let matchedAligned = null;
+
       if (dateData && dateData.sessions) {
-        // 이 슬롯의 시작 시각에 시작되는 세션을 찾음
+        // 이 슬롯의 시작 분(내림된 30분 단위)에 해당하는 세션이 있는지 탐색
         matchedSession = dateData.sessions.find(s => {
-          const range = s.time.split('~').map(str => str.trim());
-          if (range.length === 2) {
-            const startMin = timeToMinutes(range[0]);
-            return startMin === slotStartMin;
+          const timeRangeStr = getActualTimeRange(id, s.sessionName, s.time);
+          const aligned = getAlignedSlotMinutes(timeRangeStr);
+          if (aligned) {
+            return aligned.alignedStart === slotStartMin;
           }
           return false;
         });
+
+        if (matchedSession) {
+          matchedTimeRangeStr = getActualTimeRange(id, matchedSession.sessionName, matchedSession.time);
+          matchedAligned = getAlignedSlotMinutes(matchedTimeRangeStr);
+        }
       }
 
-      if (matchedSession) {
-        const range = matchedSession.time.split('~').map(str => str.trim());
-        const startMin = timeToMinutes(range[0]);
-        const endMin = timeToMinutes(range[1]);
-        const durationMin = endMin - startMin;
+      if (matchedSession && matchedAligned) {
+        const durationMin = matchedAligned.alignedEnd - matchedAligned.alignedStart;
         const span = Math.max(1, Math.round(durationMin / 30));
 
         td.rowSpan = span;
@@ -506,10 +536,17 @@ function renderMatrix() {
         const card = document.createElement('div');
         card.className = `session-card ${matchedSession.available > 0 ? 'available' : ''}`;
         
-        // 회차 이름 및 정보 렌더링
-        card.innerHTML = `${matchedSession.sessionName}<br><b>${matchedSession.available}석</b> / ${matchedSession.total}석`;
+        // 회차 이름, 실제 시간대, 예약 현황 렌더링 (카드 전체 영역을 채우도록 세부 디자인 구성)
+        card.innerHTML = `
+          <div style="font-weight: 700; margin-bottom: 2px;">${matchedSession.sessionName}</div>
+          <div style="opacity: 0.8; font-size: 0.65rem; margin-bottom: 2px;">${matchedTimeRangeStr}</div>
+          <div style="font-size: 0.7rem; font-weight: 600; margin-top: auto; padding-top: 2px; border-top: 1px dashed rgba(255,255,255,0.15);">
+            ${matchedSession.available}석 / ${matchedSession.total}석
+          </div>
+        `;
         
         if (matchedSession.available > 0) {
+          card.style.cursor = 'pointer';
           card.addEventListener('click', () => {
             if (fullCafe) window.open(fullCafe.url, '_blank');
           });

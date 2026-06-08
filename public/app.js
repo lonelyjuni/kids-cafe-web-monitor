@@ -437,7 +437,8 @@ function renderMatrix() {
   }
 
   // 요일 구분 계산 (0: 일요일 -> sunday, 6: 토요일 -> saturday, 그 외 -> weekday)
-  const targetDayOfWeek = new Date(targetDate).getDay();
+  const dateParts = targetDate.split('-');
+  const targetDayOfWeek = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getDay();
   let dayType = 'weekday';
   if (targetDayOfWeek === 6) {
     dayType = 'saturday';

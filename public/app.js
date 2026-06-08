@@ -117,13 +117,6 @@ function renderSidebar() {
       cb.addEventListener('change', (e) => {
         if (e.target.checked) {
           selectedCafes.add(cafe.id);
-          // 모바일 해상도(768px 이하)일 때 체크 시 사이드바 자동 닫기
-          if (window.innerWidth <= 768) {
-            setTimeout(() => {
-              document.getElementById('sidebar').classList.remove('open');
-              document.getElementById('sidebar-overlay').classList.remove('open');
-            }, 300);
-          }
         } else {
           selectedCafes.delete(cafe.id);
         }

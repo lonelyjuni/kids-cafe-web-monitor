@@ -80,6 +80,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       filtersPanel.classList.toggle('collapsed');
     });
   }
+
+  // 아래 시간표 영역 클릭 시 위쪽 날짜 필터 자동 최소화
+  const matrixContainer = document.getElementById('matrix-container');
+  if (matrixContainer && filtersPanel) {
+    matrixContainer.addEventListener('click', () => {
+      filtersPanel.classList.add('collapsed');
+    });
+  }
   updateFiltersSummary();
 
   // 모바일 사이드바 토글 및 오버레이 바인딩

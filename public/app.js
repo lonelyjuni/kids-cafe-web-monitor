@@ -414,12 +414,12 @@ function renderMatrix() {
     return h * 60 + m;
   }
 
-  // 지점별 실제 회차 시간대 조회 헬퍼 함수
-  function getActualTimeRange(cafeId, sessionName, fallbackTime) {
+  // 지점별 실제 회차 시간대 조회 헬퍼 함수 (요일별 구분 적용)
+  function getActualTimeRange(cafeId, sessionName, fallbackTime, dayType) {
     const sessionNumMatch = sessionName.match(/(\d+회)/);
     const sessionNum = sessionNumMatch ? sessionNumMatch[1] : null;
-    if (sessionNum && cafeTimes[cafeId] && cafeTimes[cafeId][sessionNum]) {
-      return cafeTimes[cafeId][sessionNum];
+    if (sessionNum && cafeTimes[cafeId] && cafeTimes[cafeId][dayType] && cafeTimes[cafeId][dayType][sessionNum]) {
+      return cafeTimes[cafeId][dayType][sessionNum];
     }
     return fallbackTime;
   }
@@ -436,6 +436,15 @@ function renderMatrix() {
     return { startMin, endMin, alignedStart, alignedEnd };
   }
 
+  // 요일 구분 계산 (0: 일요일 -> sunday, 6: 토요일 -> saturday, 그 외 -> weekday)
+  const targetDayOfWeek = new Date(targetDate).getDay();
+  let dayType = 'weekday';
+  if (targetDayOfWeek === 6) {
+    dayType = 'saturday';
+  } else if (targetDayOfWeek === 0) {
+    dayType = 'sunday';
+  }
+
   // 3. 동적 30분 단위 타임 슬롯 정의
   // 선택한 모든 카페들의 세션 시간대 중 최솟값과 최댓값을 구해서 슬롯 영역을 설정함 (화면 낭비 방지)
   let minTimeMin = 24 * 60; // 1440분
@@ -446,7 +455,7 @@ function renderMatrix() {
     const dateData = cacheData[id]?.dates?.find(d => d.date === targetDate);
     if (dateData && dateData.sessions) {
       dateData.sessions.forEach(s => {
-        const timeRangeStr = getActualTimeRange(id, s.sessionName, s.time);
+        const timeRangeStr = getActualTimeRange(id, s.sessionName, s.time, dayType);
         const aligned = getAlignedSlotMinutes(timeRangeStr);
         if (aligned) {
           hasAnySession = true;
@@ -520,7 +529,7 @@ function renderMatrix() {
       if (dateData && dateData.sessions) {
         // 이 슬롯의 시작 분(내림된 30분 단위)에 해당하는 세션이 있는지 탐색
         matchedSession = dateData.sessions.find(s => {
-          const timeRangeStr = getActualTimeRange(id, s.sessionName, s.time);
+          const timeRangeStr = getActualTimeRange(id, s.sessionName, s.time, dayType);
           const aligned = getAlignedSlotMinutes(timeRangeStr);
           if (aligned) {
             return aligned.alignedStart === slotStartMin;
@@ -529,7 +538,7 @@ function renderMatrix() {
         });
 
         if (matchedSession) {
-          matchedTimeRangeStr = getActualTimeRange(id, matchedSession.sessionName, matchedSession.time);
+          matchedTimeRangeStr = getActualTimeRange(id, matchedSession.sessionName, matchedSession.time, dayType);
           matchedAligned = getAlignedSlotMinutes(matchedTimeRangeStr);
         }
       }

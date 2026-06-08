@@ -73,6 +73,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     overlay.classList.remove('open');
   });
 
+  sidebar.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
   // 단발성 조회 버튼 리스너
   document.getElementById('search-now-btn').addEventListener('click', async () => {
     const btn = document.getElementById('search-now-btn');
@@ -120,7 +124,7 @@ function renderSidebar() {
         } else {
           selectedCafes.delete(cafe.id);
         }
-        fetchSelectedCafesLive();
+        renderMatrix();
       });
       list.appendChild(item);
     });
@@ -139,7 +143,7 @@ function renderSidebar() {
             selectedCafes.delete(cb.value);
           }
         });
-        fetchSelectedCafesLive();
+        renderMatrix();
         return;
       }
       
@@ -236,7 +240,7 @@ function checkNewVacancies(newData) {
 }
 
 function triggerPushNotification(cafeName, date, sessionName, seats) {
-  if (Notification.permission === 'granted') {
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
     new Notification(`[공석 알림] ${cafeName}`, {
       body: `${date} ${sessionName} - ${seats}석 공석 발생!`,
     });
@@ -369,7 +373,7 @@ function toggleMonitoring() {
     btn.innerText = '● 모니터링 중지됨';
     btn.className = 'btn btn-inactive';
   } else {
-    if (Notification.permission === 'default') {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
       Notification.requestPermission();
     }
     const secs = parseInt(document.getElementById('interval-select').value, 10);
